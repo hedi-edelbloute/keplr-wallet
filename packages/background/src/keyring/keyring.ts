@@ -15,9 +15,12 @@ import { Buffer } from "buffer/";
 import { ChainIdHelper } from "@keplr-wallet/cosmos";
 
 import { Wallet } from "@ethersproject/wallet";
+import { keccak256 } from "@ethersproject/keccak256";
 import * as BytesUtils from "@ethersproject/bytes";
 import { ETH } from "@tharsis/address-converter";
-import { keccak256 } from "@ethersproject/keccak256";
+import { hexDataSlice } from "@ethersproject/bytes";
+import { getAddress } from "@ethersproject/address";
+import { computePublicKey } from "@ethersproject/signing-key";
 
 export enum KeyRingStatus {
   NOTLOADED,
@@ -587,12 +590,25 @@ export class KeyRing {
 
       const pubKey = new PubKeySecp256k1(this.ledgerPublicKey);
 
-      return {
-        algo: "secp256k1",
-        pubKey: pubKey.toBytes(),
-        address: pubKey.getAddress(),
-        isNanoLedger: true,
-      };
+      if (coinType === 60) {
+        const publicKey = computePublicKey(pubKey.toBytes());
+        const ethereumAddress = getAddress(
+          hexDataSlice(keccak256(hexDataSlice(publicKey, 1)), 12)
+        );
+
+        return {
+          algo: "ethsecp256k1",
+          pubKey: pubKey.toBytes(),
+          address: ETH.decoder(ethereumAddress),
+          isNanoLedger: true,
+        };
+      } else
+        return {
+          algo: "secp256k1",
+          pubKey: pubKey.toBytes(),
+          address: pubKey.getAddress(),
+          isNanoLedger: true,
+        };
     } else {
       const privKey = this.loadPrivKey(coinType);
       const pubKey = privKey.getPubKey();
@@ -680,7 +696,7 @@ export class KeyRing {
     // Sign with Evmos/Ethereum
     const coinType = this.computeKeyStoreCoinType(chainId, defaultCoinType);
     if (coinType === 60) {
-      return this.signEthereum(chainId, defaultCoinType, message);
+      return this.signEthereum(env, chainId, defaultCoinType, message);
     }
 
     if (this.keyStore.type === "ledger") {
@@ -705,6 +721,7 @@ export class KeyRing {
   }
 
   public async signEthereum(
+    env: Env,
     chainId: string,
     defaultCoinType: number,
     message: Uint8Array
@@ -718,8 +735,25 @@ export class KeyRing {
     }
 
     if (this.keyStore.type === "ledger") {
-      // TODO: Ethereum Ledger Integration
-      throw new Error("Ethereum signing with Ledger is not yet supported");
+      const coinType = this.computeKeyStoreCoinType(chainId, defaultCoinType);
+      if (coinType !== 60) {
+        throw new Error(
+          "Invalid coin type passed in to Ethereum signing (expected 60)"
+        );
+      }
+
+      const pubKey = this.ledgerPublicKey;
+
+      if (!pubKey) {
+        throw new Error("Ledger public key is not initialized");
+      }
+
+      return await this.ledgerKeeper.sign(
+        env,
+        KeyRing.getKeyStoreBIP44Path(this.keyStore),
+        pubKey,
+        message
+      );
     } else {
       const coinType = this.computeKeyStoreCoinType(chainId, defaultCoinType);
       if (coinType !== 60) {
