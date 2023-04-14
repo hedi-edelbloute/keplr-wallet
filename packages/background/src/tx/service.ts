@@ -76,10 +76,7 @@ export class BackgroundTxService {
         };
 
     try {
-      const result = await restInstance.post(
-        isProtoTx ? "/cosmos/tx/v1beta1/txs" : "/txs",
-        params
-      );
+      const result = await restInstance.post("/cosmos/tx/v1beta1/txs", params);
 
       const txResponse = isProtoTx ? result.data["tx_response"] : result.data;
 

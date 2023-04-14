@@ -15,7 +15,12 @@ export class ObservableQueryAccountInner extends ObservableChainQuery<AuthAccoun
     chainGetter: ChainGetter,
     protected readonly bech32Address: string
   ) {
-    super(kvStore, chainId, chainGetter, `/auth/accounts/${bech32Address}`);
+    super(
+      kvStore,
+      chainId,
+      chainGetter,
+      `/cosmos/auth/v1beta1/accounts/${bech32Address}`
+    );
 
     makeObservable(this);
   }

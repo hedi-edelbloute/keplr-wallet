@@ -16,7 +16,9 @@ export class BaseAccount implements Account {
     // In this case, if `defaultBech32Address` param is provided, this will use it instead of the result from rest.
     defaultBech32Address: boolean = false
   ): Promise<BaseAccount> {
-    const result = await instance.get(`auth/accounts/${address}`);
+    const result = await instance.get(
+      `/cosmos/auth/v1beta1/accounts/${address}`
+    );
 
     return BaseAccount.fromAminoJSON(
       result.data,
@@ -42,14 +44,23 @@ export class BaseAccount implements Account {
       obj = obj.result;
     }
 
+    console.log("obj", obj);
+
     const type = obj.type || "";
 
     let value = "value" in obj ? obj.value : obj;
 
+    console.log("value", value);
+
     // If the chain modifies the account type, handle the case where the account type embeds the base account.
     // (Actually, the only existent case is ethermint, and this is the line for handling ethermint)
     const baseAccount =
-      value.BaseAccount || value.baseAccount || value.base_account;
+      value.BaseAccount ||
+      value.baseAccount ||
+      value.base_account ||
+      value.account.base_account;
+
+    console.log("baseAccount", baseAccount);
     if (baseAccount) {
       value = baseAccount;
     }
@@ -79,6 +90,16 @@ export class BaseAccount implements Account {
 
     const accountNumber = value.account_number;
     const sequence = value.sequence;
+
+    console.log(
+      "BaseAccount",
+      new BaseAccount(
+        type,
+        address,
+        new Int(accountNumber ?? "0"),
+        new Int(sequence ?? "0")
+      )
+    );
 
     return new BaseAccount(
       type,

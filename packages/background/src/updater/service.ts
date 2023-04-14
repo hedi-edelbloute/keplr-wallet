@@ -270,7 +270,7 @@ export class ChainUpdaterService {
               details: [];
             }
           | any
-        >("/txs", undefined, {
+        >("/cosmos/tx/v1beta1/txs", undefined, {
           validateStatus: (status) => {
             return (status >= 200 && status < 300) || status === 501;
           },
