@@ -24,7 +24,7 @@ export class ObservableQueryDelegationsInner extends ObservableChainQuery<
       kvStore,
       chainId,
       chainGetter,
-      `/staking/delegators/${bech32Address}/delegations`
+      `/cosmos/staking/v1beta1/delegations/${bech32Address}`
     );
     makeObservable(this);
 
@@ -38,6 +38,7 @@ export class ObservableQueryDelegationsInner extends ObservableChainQuery<
 
   @computed
   get total(): CoinPretty {
+    console.log("total", this.response);
     const stakeCurrency = this.chainGetter.getChain(this.chainId).stakeCurrency;
 
     if (!this.response) {
@@ -45,7 +46,8 @@ export class ObservableQueryDelegationsInner extends ObservableChainQuery<
     }
 
     let totalBalance = new Int(0);
-    for (const delegation of this.response.data.result) {
+    // @ts-expect-error toto
+    for (const delegation of this.response.data.delegation_responses) {
       if (typeof delegation.balance === "string") {
         totalBalance = totalBalance.add(new Int(delegation.balance));
       } else {
@@ -61,6 +63,7 @@ export class ObservableQueryDelegationsInner extends ObservableChainQuery<
     validatorAddress: string;
     balance: CoinPretty;
   }[] {
+    console.log("delegationBalances", this.response);
     if (!this.response) {
       return [];
     }
@@ -69,7 +72,8 @@ export class ObservableQueryDelegationsInner extends ObservableChainQuery<
 
     const result = [];
 
-    for (const delegation of this.response.data.result) {
+    // @ts-expect-error toto
+    for (const delegation of this.response.data.delegation_responses) {
       const balance =
         typeof delegation.balance === "string"
           ? delegation.balance
@@ -93,7 +97,8 @@ export class ObservableQueryDelegationsInner extends ObservableChainQuery<
       return [];
     }
 
-    const result = this.response.data.result;
+    // @ts-expect-error toto
+    const result = this.response.data.delegation_responses;
     if (result.length > 0 && "delegation" in result[0]) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore

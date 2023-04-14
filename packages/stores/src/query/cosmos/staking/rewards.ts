@@ -24,7 +24,7 @@ export class ObservableQueryRewardsInner extends ObservableChainQuery<Rewards> {
       kvStore,
       chainId,
       chainGetter,
-      `/distribution/delegators/${bech32Address}/rewards`
+      `/cosmos/distribution/v1beta1/delegators/${bech32Address}/rewards`
     );
     makeObservable(this);
 
@@ -52,7 +52,8 @@ export class ObservableQueryRewardsInner extends ObservableChainQuery<Rewards> {
 
     return StoreUtils.getBalancesFromCurrencies(
       currenciesMap,
-      this.response?.data.result.total ?? []
+      // @ts-ignore
+      this.response?.data.total ?? []
     );
   }
 
@@ -70,7 +71,8 @@ export class ObservableQueryRewardsInner extends ObservableChainQuery<Rewards> {
         return obj;
       }, {});
 
-      const reward = this.response?.data.result.rewards?.find((r) => {
+      // @ts-ignore
+      const reward = this.response?.data.rewards?.find((r) => {
         return r.validator_address === validatorAddress;
       });
 
@@ -87,15 +89,16 @@ export class ObservableQueryRewardsInner extends ObservableChainQuery<Rewards> {
 
     return StoreUtils.getBalanceFromCurrency(
       chainInfo.stakeCurrency,
-      this.response?.data.result.total ?? []
+      // @ts-ignore
+      this.response?.data.total ?? []
     );
   }
 
   readonly getStakableRewardOf = computedFn(
     (validatorAddress: string): CoinPretty => {
       const chainInfo = this.chainGetter.getChain(this.chainId);
-
-      const reward = this.response?.data.result.rewards?.find((r) => {
+      // @ts-ignore
+      const reward = this.response?.data.rewards?.find((r) => {
         return r.validator_address === validatorAddress;
       });
 
@@ -125,7 +128,8 @@ export class ObservableQueryRewardsInner extends ObservableChainQuery<Rewards> {
 
     return StoreUtils.getBalancesFromCurrencies(
       currenciesMap,
-      this.response?.data.result.total ?? []
+      // @ts-ignore
+      this.response?.data.total ?? []
     );
   }
 
@@ -146,7 +150,8 @@ export class ObservableQueryRewardsInner extends ObservableChainQuery<Rewards> {
         return obj;
       }, {});
 
-      const reward = this.response?.data.result.rewards?.find((r) => {
+      // @ts-ignore
+      const reward = this.response?.data.rewards?.find((r) => {
         return r.validator_address === validatorAddress;
       });
 
@@ -164,8 +169,8 @@ export class ObservableQueryRewardsInner extends ObservableChainQuery<Rewards> {
     }
 
     const result: string[] = [];
-
-    for (const reward of this.response.data.result.rewards ?? []) {
+    // @ts-ignore
+    for (const reward of this.response.data.rewards ?? []) {
       if (reward.reward) {
         for (const r of reward.reward) {
           const dec = new Dec(r.amount);
@@ -192,7 +197,9 @@ export class ObservableQueryRewardsInner extends ObservableChainQuery<Rewards> {
 
       const chainInfo = this.chainGetter.getChain(this.chainId);
 
-      const rewards = this.response.data.result.rewards?.slice() ?? [];
+      // @ts-ignore
+      const rewards = this.response.data.rewards?.slice() ?? [];
+      // @ts-ignore
       rewards.sort((reward1, reward2) => {
         const amount1 = StoreUtils.getBalanceFromCurrency(
           chainInfo.stakeCurrency,
@@ -211,21 +218,25 @@ export class ObservableQueryRewardsInner extends ObservableChainQuery<Rewards> {
         }
       });
 
-      return rewards
-        .filter((reward) => {
-          if (reward.reward) {
-            for (const r of reward.reward) {
-              const dec = new Dec(r.amount);
-              if (dec.truncate().gt(new Int(0))) {
-                return true;
+      return (
+        rewards
+          // @ts-ignore
+          .filter((reward) => {
+            if (reward.reward) {
+              for (const r of reward.reward) {
+                const dec = new Dec(r.amount);
+                if (dec.truncate().gt(new Int(0))) {
+                  return true;
+                }
               }
             }
-          }
 
-          return false;
-        })
-        .slice(0, maxValiadtors)
-        .map((r) => r.validator_address);
+            return false;
+          })
+          .slice(0, maxValiadtors)
+          // @ts-ignore
+          .map((r) => r.validator_address)
+      );
     }
   );
 }

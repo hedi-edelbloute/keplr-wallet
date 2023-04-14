@@ -29,6 +29,7 @@
     "clean": "lerna run clean && rm -rf node_modules && yarn clean:watchman",
     "clean:watchman": "watchman watch-del-all",
     "build": "lerna run build",
+    "build2": "lerna run build --scope='**/{extension,background,ledger-cosmos,stores}'",
     "build:libs": "lerna run build --ignore @keplr-wallet/extension",
     "test": "lerna run test --parallel",
     "build:clean": "yarn clean && yarn install --frozen-lockfile && lerna run build",

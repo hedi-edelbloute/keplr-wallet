@@ -138,9 +138,9 @@ export const UMEE_RPC_CONFIG: AxiosRequestConfig | undefined = undefined;
 export const UMEE_REST_ENDPOINT = "";
 export const UMEE_REST_CONFIG: AxiosRequestConfig | undefined = undefined;
 
-export const EVMOS_RPC_ENDPOINT = "";
+export const EVMOS_RPC_ENDPOINT = "https://rpc-evmos.keplr.app";
 export const EVMOS_RPC_CONFIG: AxiosRequestConfig | undefined = undefined;
-export const EVMOS_REST_ENDPOINT = "";
+export const EVMOS_REST_ENDPOINT = "https://lcd-evmos.keplr.app";
 export const EVMOS_REST_CONFIG: AxiosRequestConfig | undefined = undefined;
 
 export const PRIVILEGED_ORIGINS: string[] = [];
